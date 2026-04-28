@@ -7,6 +7,9 @@ const OpenAI = require("openai");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Канал, где AI-боту разрешено отвечать
+const AI_CHANNEL_ID = "1496196237945475163";
+
 app.get("/", (req, res) => {
   res.send("Bot is alive");
 });
@@ -15,7 +18,7 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port " + PORT);
 });
 
@@ -37,6 +40,7 @@ let lastReplies = [];
 
 function rememberReply(text) {
   lastReplies.push(text.toLowerCase().trim());
+
   if (lastReplies.length > 12) {
     lastReplies.shift();
   }
@@ -228,6 +232,9 @@ client.on("messageCreate", async (message) => {
   if (!message.guild) return;
   if (message.author.bot) return;
   if (!message.content || !message.content.trim()) return;
+
+  // AI działa tylko w tym jednym kanale
+  if (message.channel.id !== AI_CHANNEL_ID) return;
 
   messagesSinceLastReply += 1;
 
